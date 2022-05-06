@@ -29,6 +29,8 @@ builder.Services.AddHttpClient<WebhookSender>();
 
 var app = builder.Build();
 
+DatabaseManagementService.MigrationInitialisation(app);
+
 // Configure the HTTP request pipeline.
 app.UseSwagger();
 app.UseSwaggerUI();

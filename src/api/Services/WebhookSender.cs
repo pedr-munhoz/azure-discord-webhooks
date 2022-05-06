@@ -66,13 +66,17 @@ namespace api.Services
 
         public string GetWorkItemUpdatedTitle(Field field)
         {
+            //* Tabela - TitulosMensagem {valorAntigo, valorNovo, titulo}
+
             switch (field.OldValue, field.NewValue)
             {
                 case ("New", "Approved"):
                     return "Tarefa liberada para desenvolvimento";
+                case ("New", "Commited"):
+                    return "Tarefa aguardando revisão de código";
 
                 default:
-                    return "Atualização no quadro";
+                    return "Board Update";
             }
         }
     }
