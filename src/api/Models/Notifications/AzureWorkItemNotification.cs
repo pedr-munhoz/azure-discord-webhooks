@@ -21,25 +21,25 @@ public partial class AzureWorkItemNotification
     public Guid Id { get; set; }
 
     [JsonProperty("eventType")]
-    public string EventType { get; set; }
+    public string? EventType { get; set; }
 
     [JsonProperty("publisherId")]
-    public string PublisherId { get; set; }
+    public string? PublisherId { get; set; }
 
     [JsonProperty("message")]
-    public Message Message { get; set; }
+    public Message? Message { get; set; }
 
     [JsonProperty("detailedMessage")]
-    public Message DetailedMessage { get; set; }
+    public Message? DetailedMessage { get; set; }
 
     [JsonProperty("resource")]
-    public Resource Resource { get; set; }
+    public Resource? Resource { get; set; }
 
     [JsonProperty("resourceVersion")]
-    public string ResourceVersion { get; set; }
+    public string? ResourceVersion { get; set; }
 
     [JsonProperty("resourceContainers")]
-    public ResourceContainers ResourceContainers { get; set; }
+    public ResourceContainers? ResourceContainers { get; set; }
 
     [JsonProperty("createdDate")]
     public DateTimeOffset CreatedDate { get; set; }
@@ -48,13 +48,13 @@ public partial class AzureWorkItemNotification
 public partial class Message
 {
     [JsonProperty("text")]
-    public string Text { get; set; }
+    public string? Text { get; set; }
 
     [JsonProperty("html")]
-    public string Html { get; set; }
+    public string? Html { get; set; }
 
     [JsonProperty("markdown")]
-    public string Markdown { get; set; }
+    public string? Markdown { get; set; }
 }
 
 public partial class Resource
@@ -69,49 +69,49 @@ public partial class Resource
     public long Rev { get; set; }
 
     [JsonProperty("revisedBy")]
-    public EdBy RevisedBy { get; set; }
+    public EdBy? RevisedBy { get; set; }
 
     [JsonProperty("revisedDate")]
     public DateTimeOffset RevisedDate { get; set; }
 
     [JsonProperty("fields")]
-    public Dictionary<string, Field> Fields { get; set; }
+    public Dictionary<string, Field>? Fields { get; set; }
 
     [JsonProperty("_links")]
-    public ResourceLinks Links { get; set; }
+    public ResourceLinks? Links { get; set; }
 
     [JsonProperty("url")]
-    public Uri Url { get; set; }
+    public Uri? Url { get; set; }
 
     [JsonProperty("revision")]
-    public Revision Revision { get; set; }
+    public Revision? Revision { get; set; }
 }
 
 public partial class Field
 {
     [JsonProperty("oldValue")]
-    public string OldValue { get; set; }
+    public string? OldValue { get; set; }
 
     [JsonProperty("newValue")]
-    public string NewValue { get; set; }
+    public string? NewValue { get; set; }
 }
 
 public partial class ResourceLinks
 {
     [JsonProperty("self")]
-    public Parent Self { get; set; }
+    public Parent? Self { get; set; }
 
     [JsonProperty("parent")]
-    public Parent Parent { get; set; }
+    public Parent? Parent { get; set; }
 
     [JsonProperty("workItemUpdates")]
-    public Parent WorkItemUpdates { get; set; }
+    public Parent? WorkItemUpdates { get; set; }
 }
 
 public partial class Parent
 {
     [JsonProperty("href")]
-    public Uri Href { get; set; }
+    public Uri? Href { get; set; }
 }
 
 public partial class EdBy
@@ -120,28 +120,28 @@ public partial class EdBy
     public Guid Id { get; set; }
 
     [JsonProperty("displayName")]
-    public string DisplayName { get; set; }
+    public string? DisplayName { get; set; }
 
     [JsonProperty("url")]
-    public Uri Url { get; set; }
+    public Uri? Url { get; set; }
 
     [JsonProperty("_links")]
-    public RevisedByLinks Links { get; set; }
+    public RevisedByLinks? Links { get; set; }
 
     [JsonProperty("uniqueName")]
-    public string UniqueName { get; set; }
+    public string? UniqueName { get; set; }
 
     [JsonProperty("imageUrl")]
-    public Uri ImageUrl { get; set; }
+    public Uri? ImageUrl { get; set; }
 
     [JsonProperty("descriptor")]
-    public string Descriptor { get; set; }
+    public string? Descriptor { get; set; }
 }
 
 public partial class RevisedByLinks
 {
     [JsonProperty("avatar")]
-    public Parent Avatar { get; set; }
+    public Parent? Avatar { get; set; }
 }
 
 public partial class Revision
@@ -153,64 +153,64 @@ public partial class Revision
     public long Rev { get; set; }
 
     [JsonProperty("fields")]
-    public Fields Fields { get; set; }
+    public Fields? Fields { get; set; }
 
     [JsonProperty("url")]
-    public Uri Url { get; set; }
+    public Uri? Url { get; set; }
 }
 
 public partial class Fields
 {
     [JsonProperty("System.AreaPath")]
-    public string SystemAreaPath { get; set; }
+    public string? SystemAreaPath { get; set; }
 
     [JsonProperty("System.TeamProject")]
-    public string SystemTeamProject { get; set; }
+    public string? SystemTeamProject { get; set; }
 
     [JsonProperty("System.IterationPath")]
-    public string SystemIterationPath { get; set; }
+    public string? SystemIterationPath { get; set; }
 
     [JsonProperty("System.WorkItemType")]
-    public string SystemWorkItemType { get; set; }
+    public string? SystemWorkItemType { get; set; }
 
     [JsonProperty("System.State")]
-    public string SystemState { get; set; }
+    public string? SystemState { get; set; }
 
     [JsonProperty("System.Reason")]
-    public string SystemReason { get; set; }
+    public string? SystemReason { get; set; }
 
     [JsonProperty("System.CreatedDate")]
     public DateTimeOffset SystemCreatedDate { get; set; }
 
     [JsonProperty("System.CreatedBy")]
-    public EdBy SystemCreatedBy { get; set; }
+    public string? SystemCreatedBy { get; set; }
 
     [JsonProperty("System.ChangedDate")]
     public DateTimeOffset SystemChangedDate { get; set; }
 
     [JsonProperty("System.ChangedBy")]
-    public EdBy SystemChangedBy { get; set; }
+    public string? SystemChangedBy { get; set; }
 
     [JsonProperty("System.Title")]
-    public string SystemTitle { get; set; }
+    public string? SystemTitle { get; set; }
 
     [JsonProperty("Microsoft.VSTS.Common.Severity")]
-    public string MicrosoftVstsCommonSeverity { get; set; }
+    public string? MicrosoftVstsCommonSeverity { get; set; }
 
     [JsonProperty("WEF_EB329F44FE5F4A94ACB1DA153FDF38BA_Kanban.Column")]
-    public string WefEb329F44Fe5F4A94Acb1Da153Fdf38BaKanbanColumn { get; set; }
+    public string? WefEb329F44Fe5F4A94Acb1Da153Fdf38BaKanbanColumn { get; set; }
 }
 
 public partial class ResourceContainers
 {
     [JsonProperty("collection")]
-    public Account Collection { get; set; }
+    public Account? Collection { get; set; }
 
     [JsonProperty("account")]
-    public Account Account { get; set; }
+    public Account? Account { get; set; }
 
     [JsonProperty("project")]
-    public Account Project { get; set; }
+    public Account? Project { get; set; }
 }
 
 public partial class Account
@@ -221,12 +221,12 @@ public partial class Account
 
 public partial class AzureWorkItemNotification
 {
-    public static AzureWorkItemNotification FromJson(string json) => JsonConvert.DeserializeObject<AzureWorkItemNotification>(json, QuickType.Converter.Settings);
+    public static AzureWorkItemNotification? FromJson(string json) => JsonConvert.DeserializeObject<AzureWorkItemNotification>(json, QuickType.Converter.Settings);
 }
 
 public static class Serialize
 {
-    public static string ToJson(this AzureWorkItemNotification self) => JsonConvert.SerializeObject(self, QuickType.Converter.Settings);
+    public static string? ToJson(this AzureWorkItemNotification self) => JsonConvert.SerializeObject(self, QuickType.Converter.Settings);
 }
 
 internal static class Converter
