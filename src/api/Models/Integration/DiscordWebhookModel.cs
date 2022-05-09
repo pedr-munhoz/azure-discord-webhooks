@@ -12,27 +12,27 @@ using Newtonsoft.Json.Converters;
 public partial class DiscordWebhookModel
 {
     [JsonProperty("username")]
-    public string Username { get; set; }
+    public string? Username { get; set; }
 
     [JsonProperty("avatar_url")]
-    public Uri AvatarUrl { get; set; }
+    public Uri? AvatarUrl { get; set; }
 
     [JsonProperty("embeds")]
-    public Embed[] Embeds { get; set; }
+    public Embed[] Embeds { get; set; } = { };
 }
 
 public partial class Embed
 {
     [JsonProperty("title")]
-    public string Title { get; set; }
+    public string? Title { get; set; }
 
     [JsonProperty("description")]
-    public string Description { get; set; }
+    public string? Description { get; set; }
 }
 
 public partial class DiscordWebhookModel
 {
-    public static DiscordWebhookModel FromJson(string json) => JsonConvert.DeserializeObject<DiscordWebhookModel>(json, QuickType.ConverterDiscordWebhookModel.Settings);
+    public static DiscordWebhookModel? FromJson(string json) => JsonConvert.DeserializeObject<DiscordWebhookModel>(json, QuickType.ConverterDiscordWebhookModel.Settings);
 }
 
 internal static class ConverterDiscordWebhookModel

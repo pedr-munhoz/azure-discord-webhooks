@@ -32,8 +32,8 @@ namespace api.Services
                 Embeds = new Embed[1]{
                     new Embed
                     {
-                        Title = GetWorkItemUpdatedTitle(notification.Resource.Fields["System.State"]),
-                        Description = notification.Message.Markdown,
+                        Title = GetWorkItemUpdatedTitle(notification?.Resource?.Fields?["System.State"]),
+                        Description = notification?.Message?.Markdown ?? "",
                     },
                 },
             };
@@ -41,7 +41,7 @@ namespace api.Services
             foreach (var url in urlsToNotify)
             {
                 Console.WriteLine($"Sending message to {url}...");
-                Console.WriteLine(notification.DetailedMessage.Text);
+                Console.WriteLine(notification?.DetailedMessage?.Text);
                 Console.WriteLine();
 
                 var request = GetRequestMessage(url, HttpMethod.Post, discordModel);
@@ -64,11 +64,11 @@ namespace api.Services
             return request;
         }
 
-        public string GetWorkItemUpdatedTitle(Field field)
+        public string GetWorkItemUpdatedTitle(Field? field)
         {
             //* Tabela - TitulosMensagem {valorAntigo, valorNovo, titulo}
 
-            switch (field.OldValue, field.NewValue)
+            switch (field?.OldValue, field?.NewValue)
             {
                 case ("New", "Approved"):
                     return "Tarefa liberada para desenvolvimento";

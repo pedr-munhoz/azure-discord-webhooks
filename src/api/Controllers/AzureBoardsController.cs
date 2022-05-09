@@ -20,7 +20,7 @@ namespace api.Controllers
         {
             await _sender.NotifyWorkItemUpdated(model);
 
-            return Ok(model.DetailedMessage.Text);
+            return Ok(model?.DetailedMessage?.Text);
         }
     }
 }
