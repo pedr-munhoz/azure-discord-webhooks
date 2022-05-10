@@ -8,4 +8,5 @@ public class WebhooksDbContext : DbContext
     public WebhooksDbContext(DbContextOptions options) : base(options) { }
 
     public DbSet<Webhook> Webhooks { get; set; } = null!;
+    public DbSet<CustomTitle> CustomTitles { get; set; } = null!;
 }

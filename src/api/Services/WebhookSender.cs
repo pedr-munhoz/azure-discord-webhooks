@@ -1,5 +1,6 @@
 using System.Text;
 using api.Infrastructure.Database;
+using api.Models.Entities;
 using api.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
@@ -10,6 +11,7 @@ namespace api.Services;
 public class WebhookSender
 {
     private const string MediaTypeJson = "application/json";
+    private const string DefaultWorkItemUpdatedTitle = "Work item updated";
     private readonly WebhooksDbContext _dbContext;
     private readonly HttpClient _httpClient;
 
@@ -32,7 +34,7 @@ public class WebhookSender
             Embeds = new Embed[1]{
                     new Embed
                     {
-                        Title = GetWorkItemUpdatedTitle(notification?.Resource?.Fields?["System.State"]),
+                        Title = await GetWorkItemUpdatedTitle(notification?.Resource?.Fields?["System.State"]),
                         Description = notification?.Message?.Markdown ?? "",
                     },
                 },
@@ -64,17 +66,19 @@ public class WebhookSender
         return request;
     }
 
-    public string GetWorkItemUpdatedTitle(Field? field)
+    public async Task<string> GetWorkItemUpdatedTitle(Field? stateField)
     {
-        switch (field?.OldValue, field?.NewValue)
-        {
-            case ("New", "Approved"):
-                return "Tarefa liberada para desenvolvimento";
-            case ("New", "Commited"):
-                return "Tarefa aguardando revisão de código";
+        if (stateField?.OldValue is null || stateField?.NewValue is null)
+            return DefaultWorkItemUpdatedTitle;
 
-            default:
-                return "Board Update";
-        }
+        var customTitle = await _dbContext.CustomTitles
+            .Where(x => x.OldState == stateField.OldValue)
+            .Where(x => x.NewState == stateField.NewValue)
+            .FirstOrDefaultAsync();
+
+        if (customTitle is default(CustomTitle))
+            return DefaultWorkItemUpdatedTitle;
+
+        return customTitle.Title;
     }
 }
