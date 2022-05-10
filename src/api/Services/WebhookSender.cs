@@ -28,14 +28,17 @@ public class WebhookSender
             .Select(x => x.Url)
             .ToListAsync();
 
+        Field? stateField = null;
+        notification?.Resource?.Fields?.TryGetValue("System.State", out stateField);
+
         var discordModel = new DiscordWebhookModel
         {
             Username = "Azure Boards",
             Embeds = new Embed[1]{
                     new Embed
                     {
-                        Title = await GetWorkItemUpdatedTitle(notification?.Resource?.Fields?["System.State"]),
-                        Description = notification?.Message?.Markdown ?? "",
+                        Title = await GetWorkItemUpdatedTitle(stateField),
+                        Description = notification?.DetailedMessage?.Markdown ?? "",
                     },
                 },
         };
