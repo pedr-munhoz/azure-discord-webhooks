@@ -36,7 +36,7 @@ public class WebhookSender
             Embeds = new Embed[1]{
                     new Embed
                     {
-                        Title = await GetWorkItemUpdatedTitle(stateField),
+                        Title = await GetMessageTitle(stateField, WebhookType.WorkItemUpdated),
                         Description = notification?.DetailedMessage?.Markdown ?? "",
                     },
                 },
@@ -68,12 +68,12 @@ public class WebhookSender
         return request;
     }
 
-    public async Task<string> GetWorkItemUpdatedTitle(Field? stateField)
+    public async Task<string> GetMessageTitle(Field? stateField, WebhookType type)
     {
         if (stateField is null)
             return DefaultWorkItemUpdatedTitle;
 
-        var customTitle = await _titleManagement.GetClosestMatch(oldState: stateField?.OldValue, newState: stateField?.NewValue);
+        var customTitle = await _titleManagement.GetClosestMatch(oldState: stateField?.OldValue, newState: stateField?.NewValue, type: type);
 
         if (!customTitle.success || customTitle.entity is null)
             return DefaultWorkItemUpdatedTitle;

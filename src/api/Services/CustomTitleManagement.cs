@@ -1,5 +1,6 @@
 using api.Infrastructure.Database;
 using api.Models.Entities;
+using api.Models.Enums;
 using api.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,7 +17,7 @@ public class CustomTitleManagement
 
     public async Task<(bool success, CustomTitle? customTitle)> Create(CustomTitleViewModel model)
     {
-        var existingTitle = await Get(oldState: model.OldState, newState: model.NewState);
+        var existingTitle = await Get(oldState: model.OldState, newState: model.NewState, type: model.WebhookType);
 
         if (existingTitle.success)
         {
@@ -55,11 +56,12 @@ public class CustomTitleManagement
         return (true, entity);
     }
 
-    public async Task<(bool success, CustomTitle? entity)> Get(string? oldState, string? newState)
+    public async Task<(bool success, CustomTitle? entity)> Get(string? oldState, string? newState, WebhookType type)
     {
         var entity = await _dbContext.CustomTitles
             .Where(x => x.OldState == oldState)
             .Where(x => x.NewState == newState)
+            .Where(x => x.WebhookType == type)
             .FirstOrDefaultAsync();
 
         if (entity is null)
@@ -70,12 +72,13 @@ public class CustomTitleManagement
         return (true, entity);
     }
 
-    public async Task<(bool success, CustomTitle? entity)> GetClosestMatch(string? oldState, string? newState)
+    public async Task<(bool success, CustomTitle? entity)> GetClosestMatch(string? oldState, string? newState, WebhookType type)
     {
         // retrieves every viable match from the DB
         var entities = await _dbContext.CustomTitles
             .Where(x => x.OldState == oldState || x.OldState == null)
             .Where(x => x.NewState == newState || x.NewState == null)
+            .Where(x => x.WebhookType == type)
             .ToListAsync();
 
         // checks for the exact match
