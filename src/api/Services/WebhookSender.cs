@@ -5,79 +5,76 @@ using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using QuickType;
 
-namespace api.Services
+namespace api.Services;
+
+public class WebhookSender
 {
-    public class WebhookSender
+    private const string MediaTypeJson = "application/json";
+    private readonly WebhooksDbContext _dbContext;
+    private readonly HttpClient _httpClient;
+
+    public WebhookSender(WebhooksDbContext dbContext, HttpClient httpClient)
     {
-        private const string MediaTypeJson = "application/json";
-        private readonly WebhooksDbContext _dbContext;
-        private readonly HttpClient _httpClient;
+        _dbContext = dbContext;
+        _httpClient = httpClient;
+    }
 
-        public WebhookSender(WebhooksDbContext dbContext, HttpClient httpClient)
+    public async Task<bool> NotifyWorkItemUpdated(AzureWorkItemNotification notification)
+    {
+        var urlsToNotify = await _dbContext.Webhooks
+            .Where(x => x.Type == WebhookType.WorkItemUpdated)
+            .Select(x => x.Url)
+            .ToListAsync();
+
+        var discordModel = new DiscordWebhookModel
         {
-            _dbContext = dbContext;
-            _httpClient = httpClient;
-        }
-
-        public async Task<bool> NotifyWorkItemUpdated(AzureWorkItemNotification notification)
-        {
-            var urlsToNotify = await _dbContext.Webhooks
-                .Where(x => x.Type == WebhookType.WorkItemUpdated)
-                .Select(x => x.Url)
-                .ToListAsync();
-
-            var discordModel = new DiscordWebhookModel
-            {
-                Username = "Azure Boards",
-                Embeds = new Embed[1]{
+            Username = "Azure Boards",
+            Embeds = new Embed[1]{
                     new Embed
                     {
                         Title = GetWorkItemUpdatedTitle(notification?.Resource?.Fields?["System.State"]),
                         Description = notification?.Message?.Markdown ?? "",
                     },
                 },
-            };
+        };
 
-            foreach (var url in urlsToNotify)
-            {
-                Console.WriteLine($"Sending message to {url}...");
-                Console.WriteLine(notification?.DetailedMessage?.Text);
-                Console.WriteLine();
+        foreach (var url in urlsToNotify)
+        {
+            Console.WriteLine($"Sending message to {url}...");
+            Console.WriteLine(notification?.DetailedMessage?.Text);
+            Console.WriteLine();
 
-                var request = GetRequestMessage(url, HttpMethod.Post, discordModel);
-                await _httpClient.SendAsync(request, default(CancellationToken));
-            }
-
-            return true;
+            var request = GetRequestMessage(url, HttpMethod.Post, discordModel);
+            await _httpClient.SendAsync(request, default(CancellationToken));
         }
 
-        private HttpRequestMessage GetRequestMessage(string path, HttpMethod method, object content)
+        return true;
+    }
+
+    private HttpRequestMessage GetRequestMessage(string path, HttpMethod method, object content)
+    {
+        var uri = new Uri(path);
+        var request = new HttpRequestMessage(method, uri);
+
+        if (content != null)
         {
-            var uri = new Uri(path);
-            var request = new HttpRequestMessage(method, uri);
-
-            if (content != null)
-            {
-                request.Content = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, MediaTypeJson);
-            }
-
-            return request;
+            request.Content = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, MediaTypeJson);
         }
 
-        public string GetWorkItemUpdatedTitle(Field? field)
+        return request;
+    }
+
+    public string GetWorkItemUpdatedTitle(Field? field)
+    {
+        switch (field?.OldValue, field?.NewValue)
         {
-            //* Tabela - TitulosMensagem {valorAntigo, valorNovo, titulo}
+            case ("New", "Approved"):
+                return "Tarefa liberada para desenvolvimento";
+            case ("New", "Commited"):
+                return "Tarefa aguardando revisão de código";
 
-            switch (field?.OldValue, field?.NewValue)
-            {
-                case ("New", "Approved"):
-                    return "Tarefa liberada para desenvolvimento";
-                case ("New", "Commited"):
-                    return "Tarefa aguardando revisão de código";
-
-                default:
-                    return "Board Update";
-            }
+            default:
+                return "Board Update";
         }
     }
 }

@@ -4,12 +4,9 @@ namespace QuickType;
 
 using System;
 using System.Collections.Generic;
-
-using System.Globalization;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
-public partial class AzureWorkItemNotification
+public class AzureWorkItemNotification
 {
     [JsonProperty("subscriptionId")]
     public Guid SubscriptionId { get; set; }
@@ -45,7 +42,7 @@ public partial class AzureWorkItemNotification
     public DateTimeOffset CreatedDate { get; set; }
 }
 
-public partial class Message
+public class Message
 {
     [JsonProperty("text")]
     public string? Text { get; set; }
@@ -57,7 +54,7 @@ public partial class Message
     public string? Markdown { get; set; }
 }
 
-public partial class Resource
+public class Resource
 {
     [JsonProperty("id")]
     public long Id { get; set; }
@@ -87,7 +84,7 @@ public partial class Resource
     public Revision? Revision { get; set; }
 }
 
-public partial class Field
+public class Field
 {
     [JsonProperty("oldValue")]
     public string? OldValue { get; set; }
@@ -96,7 +93,7 @@ public partial class Field
     public string? NewValue { get; set; }
 }
 
-public partial class ResourceLinks
+public class ResourceLinks
 {
     [JsonProperty("self")]
     public Parent? Self { get; set; }
@@ -108,13 +105,13 @@ public partial class ResourceLinks
     public Parent? WorkItemUpdates { get; set; }
 }
 
-public partial class Parent
+public class Parent
 {
     [JsonProperty("href")]
     public Uri? Href { get; set; }
 }
 
-public partial class EdBy
+public class EdBy
 {
     [JsonProperty("id")]
     public Guid Id { get; set; }
@@ -138,13 +135,13 @@ public partial class EdBy
     public string? Descriptor { get; set; }
 }
 
-public partial class RevisedByLinks
+public class RevisedByLinks
 {
     [JsonProperty("avatar")]
     public Parent? Avatar { get; set; }
 }
 
-public partial class Revision
+public class Revision
 {
     [JsonProperty("id")]
     public long Id { get; set; }
@@ -159,7 +156,7 @@ public partial class Revision
     public Uri? Url { get; set; }
 }
 
-public partial class Fields
+public class Fields
 {
     [JsonProperty("System.AreaPath")]
     public string? SystemAreaPath { get; set; }
@@ -201,7 +198,7 @@ public partial class Fields
     public string? WefEb329F44Fe5F4A94Acb1Da153Fdf38BaKanbanColumn { get; set; }
 }
 
-public partial class ResourceContainers
+public class ResourceContainers
 {
     [JsonProperty("collection")]
     public Account? Collection { get; set; }
@@ -213,30 +210,8 @@ public partial class ResourceContainers
     public Account? Project { get; set; }
 }
 
-public partial class Account
+public class Account
 {
     [JsonProperty("id")]
     public Guid Id { get; set; }
-}
-
-public partial class AzureWorkItemNotification
-{
-    public static AzureWorkItemNotification? FromJson(string json) => JsonConvert.DeserializeObject<AzureWorkItemNotification>(json, QuickType.Converter.Settings);
-}
-
-public static class Serialize
-{
-    public static string? ToJson(this AzureWorkItemNotification self) => JsonConvert.SerializeObject(self, QuickType.Converter.Settings);
-}
-
-internal static class Converter
-{
-    public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
-    {
-        MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
-        DateParseHandling = DateParseHandling.None,
-        Converters = {
-                new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
-            },
-    };
 }
