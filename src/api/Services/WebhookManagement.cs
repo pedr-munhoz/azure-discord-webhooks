@@ -62,4 +62,14 @@ public class WebhookManagement
 
         return true;
     }
+
+    public async Task<IEnumerable<string>> GetUrlsByType(WebhookType type)
+    {
+        var urls = await _dbContext.Webhooks
+            .Where(x => x.Type == WebhookType.WorkItemUpdated)
+            .Select(x => x.Url)
+            .ToListAsync();
+
+        return urls;
+    }
 }

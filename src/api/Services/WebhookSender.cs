@@ -12,21 +12,20 @@ public class WebhookSender
 {
     private const string MediaTypeJson = "application/json";
     private const string DefaultWorkItemUpdatedTitle = "Work item updated";
-    private readonly WebhooksDbContext _dbContext;
     private readonly HttpClient _httpClient;
+    private readonly WebhookManagement _webhooksManagement;
+    private readonly CustomTitleManagement _titleManagement;
 
-    public WebhookSender(WebhooksDbContext dbContext, HttpClient httpClient)
+    public WebhookSender(HttpClient httpClient, WebhookManagement webhooksManagement, CustomTitleManagement titleManagement)
     {
-        _dbContext = dbContext;
         _httpClient = httpClient;
+        _webhooksManagement = webhooksManagement;
+        _titleManagement = titleManagement;
     }
 
     public async Task<bool> NotifyWorkItemUpdated(AzureWorkItemNotification notification)
     {
-        var urlsToNotify = await _dbContext.Webhooks
-            .Where(x => x.Type == WebhookType.WorkItemUpdated)
-            .Select(x => x.Url)
-            .ToListAsync();
+        var urlsToNotify = await _webhooksManagement.GetUrlsByType(WebhookType.WorkItemUpdated);
 
         Field? stateField = null;
         notification?.Resource?.Fields?.TryGetValue("System.State", out stateField);
@@ -71,17 +70,14 @@ public class WebhookSender
 
     public async Task<string> GetWorkItemUpdatedTitle(Field? stateField)
     {
-        if (stateField?.OldValue is null || stateField?.NewValue is null)
+        if (stateField is null)
             return DefaultWorkItemUpdatedTitle;
 
-        var customTitle = await _dbContext.CustomTitles
-            .Where(x => x.OldState == stateField.OldValue)
-            .Where(x => x.NewState == stateField.NewValue)
-            .FirstOrDefaultAsync();
+        var customTitle = await _titleManagement.GetClosestMatch(oldState: stateField?.OldValue, newState: stateField?.NewValue);
 
-        if (customTitle is default(CustomTitle))
+        if (!customTitle.success || customTitle.entity is null)
             return DefaultWorkItemUpdatedTitle;
 
-        return customTitle.Title;
+        return customTitle.entity.Title;
     }
 }

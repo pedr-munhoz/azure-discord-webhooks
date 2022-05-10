@@ -25,6 +25,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSwaggerGenNewtonsoftSupport();
 
 builder.Services.AddTransient<WebhookManagement>();
+builder.Services.AddTransient<CustomTitleManagement>();
 builder.Services.AddHttpClient<WebhookSender>();
 
 var app = builder.Build();
