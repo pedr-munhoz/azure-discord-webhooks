@@ -1,83 +1,83 @@
 using System.Text;
 using api.Infrastructure.Database;
+using api.Models.Entities;
 using api.Models.Enums;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using QuickType;
 
-namespace api.Services
+namespace api.Services;
+
+public class WebhookSender
 {
-    public class WebhookSender
+    private const string MediaTypeJson = "application/json";
+    private const string DefaultWorkItemUpdatedTitle = "Work item updated";
+    private readonly HttpClient _httpClient;
+    private readonly WebhookManagement _webhooksManagement;
+    private readonly CustomTitleManagement _titleManagement;
+
+    public WebhookSender(HttpClient httpClient, WebhookManagement webhooksManagement, CustomTitleManagement titleManagement)
     {
-        private const string MediaTypeJson = "application/json";
-        private readonly WebhooksDbContext _dbContext;
-        private readonly HttpClient _httpClient;
+        _httpClient = httpClient;
+        _webhooksManagement = webhooksManagement;
+        _titleManagement = titleManagement;
+    }
 
-        public WebhookSender(WebhooksDbContext dbContext, HttpClient httpClient)
+    public async Task<bool> NotifyWorkItemUpdated(AzureWorkItemNotification notification)
+    {
+        var urlsToNotify = await _webhooksManagement.GetUrlsByType(WebhookType.WorkItemUpdated);
+
+        Field? stateField = null;
+        notification?.Resource?.Fields?.TryGetValue("System.State", out stateField);
+
+        var discordModel = new DiscordWebhookModel
         {
-            _dbContext = dbContext;
-            _httpClient = httpClient;
-        }
-
-        public async Task<bool> NotifyWorkItemUpdated(AzureWorkItemNotification notification)
-        {
-            var urlsToNotify = await _dbContext.Webhooks
-                .Where(x => x.Type == WebhookType.WorkItemUpdated)
-                .Select(x => x.Url)
-                .ToListAsync();
-
-            var discordModel = new DiscordWebhookModel
-            {
-                Username = "Azure Boards",
-                Embeds = new Embed[1]{
+            Username = "Azure Boards",
+            Embeds = new Embed[1]{
                     new Embed
                     {
-                        Title = GetWorkItemUpdatedTitle(notification?.Resource?.Fields?["System.State"]),
-                        Description = notification?.Message?.Markdown ?? "",
+                        Title = await GetMessageTitle(stateField, WebhookType.WorkItemUpdated),
+                        Description = notification?.DetailedMessage?.Markdown ?? "",
                     },
                 },
-            };
+        };
 
-            foreach (var url in urlsToNotify)
-            {
-                Console.WriteLine($"Sending message to {url}...");
-                Console.WriteLine(notification?.DetailedMessage?.Text);
-                Console.WriteLine();
-
-                var request = GetRequestMessage(url, HttpMethod.Post, discordModel);
-                await _httpClient.SendAsync(request, default(CancellationToken));
-            }
-
-            return true;
-        }
-
-        private HttpRequestMessage GetRequestMessage(string path, HttpMethod method, object content)
+        foreach (var url in urlsToNotify)
         {
-            var uri = new Uri(path);
-            var request = new HttpRequestMessage(method, uri);
+            Console.WriteLine($"Sending message to {url}...");
+            Console.WriteLine(notification?.DetailedMessage?.Text);
+            Console.WriteLine();
 
-            if (content != null)
-            {
-                request.Content = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, MediaTypeJson);
-            }
-
-            return request;
+            var request = GetRequestMessage(url, HttpMethod.Post, discordModel);
+            await _httpClient.SendAsync(request, default(CancellationToken));
         }
 
-        public string GetWorkItemUpdatedTitle(Field? field)
+        return true;
+    }
+
+    private HttpRequestMessage GetRequestMessage(string path, HttpMethod method, object content)
+    {
+        var uri = new Uri(path);
+        var request = new HttpRequestMessage(method, uri);
+
+        if (content != null)
         {
-            //* Tabela - TitulosMensagem {valorAntigo, valorNovo, titulo}
-
-            switch (field?.OldValue, field?.NewValue)
-            {
-                case ("New", "Approved"):
-                    return "Tarefa liberada para desenvolvimento";
-                case ("New", "Commited"):
-                    return "Tarefa aguardando revisão de código";
-
-                default:
-                    return "Board Update";
-            }
+            request.Content = new StringContent(JsonConvert.SerializeObject(content), Encoding.UTF8, MediaTypeJson);
         }
+
+        return request;
+    }
+
+    public async Task<string> GetMessageTitle(Field? stateField, WebhookType type)
+    {
+        if (stateField is null)
+            return DefaultWorkItemUpdatedTitle;
+
+        var customTitle = await _titleManagement.GetClosestMatch(oldState: stateField?.OldValue, newState: stateField?.NewValue, type: type);
+
+        if (!customTitle.success || customTitle.entity is null)
+            return DefaultWorkItemUpdatedTitle;
+
+        return customTitle.entity.Title;
     }
 }

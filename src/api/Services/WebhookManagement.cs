@@ -5,62 +5,71 @@ using api.Models.Enums;
 using api.Models.ViewModels;
 using Microsoft.EntityFrameworkCore;
 
-namespace api.Services
+namespace api.Services;
+
+public class WebhookManagement
 {
-    public class WebhookManagement
+    private readonly WebhooksDbContext _dbContext;
+
+    public WebhookManagement(WebhooksDbContext dbContext)
     {
-        private readonly WebhooksDbContext _dbContext;
+        _dbContext = dbContext;
+    }
 
-        public WebhookManagement(WebhooksDbContext dbContext)
+    public async Task<(bool success, Webhook? webhook)> Create(WebhookViewModel model)
+    {
+        var entity = new Webhook
         {
-            _dbContext = dbContext;
+            Url = model.Url,
+            Type = model.Type,
+        };
+
+        await _dbContext.Webhooks.AddAsync(entity);
+        await _dbContext.SaveChangesAsync();
+
+        return (true, entity);
+    }
+
+    public async Task<(bool success, IEnumerable<Webhook> webhooks)> Get()
+    {
+        var entities = await _dbContext.Webhooks.ToListAsync();
+        return (true, entities);
+    }
+
+    public async Task<(bool success, Webhook? webhook)> Get(long id)
+    {
+        var entity = await _dbContext.Webhooks.Where(x => x.Id == id).FirstOrDefaultAsync();
+
+        if (entity is null)
+        {
+            return (false, null);
         }
 
-        public async Task<(bool success, Webhook? webhook)> Create(WebhookViewModel model)
+        return (true, entity);
+    }
+
+    public async Task<bool> Remove(long id)
+    {
+        var entity = await _dbContext.Webhooks.Where(x => x.Id == id).FirstOrDefaultAsync();
+
+        if (entity is null)
         {
-            var entity = new Webhook
-            {
-                Url = model.Url,
-                Type = model.Type,
-            };
-
-            await _dbContext.Webhooks.AddAsync(entity);
-            await _dbContext.SaveChangesAsync();
-
-            return (true, entity);
+            return false;
         }
 
-        public async Task<(bool success, IEnumerable<Webhook> webhooks)> Get()
-        {
-            var entities = await _dbContext.Webhooks.ToListAsync();
-            return (true, entities);
-        }
+        _dbContext.Webhooks.Remove(entity);
+        await _dbContext.SaveChangesAsync();
 
-        public async Task<(bool success, Webhook? webhook)> Get(long id)
-        {
-            var entity = await _dbContext.Webhooks.Where(x => x.Id == id).FirstOrDefaultAsync();
+        return true;
+    }
 
-            if (entity is null)
-            {
-                return (false, null);
-            }
+    public async Task<IEnumerable<string>> GetUrlsByType(WebhookType type)
+    {
+        var urls = await _dbContext.Webhooks
+            .Where(x => x.Type == WebhookType.WorkItemUpdated)
+            .Select(x => x.Url)
+            .ToListAsync();
 
-            return (true, entity);
-        }
-
-        public async Task<bool> Remove(long id)
-        {
-            var entity = await _dbContext.Webhooks.Where(x => x.Id == id).FirstOrDefaultAsync();
-
-            if (entity is null)
-            {
-                return false;
-            }
-
-            _dbContext.Webhooks.Remove(entity);
-            await _dbContext.SaveChangesAsync();
-
-            return true;
-        }
+        return urls;
     }
 }

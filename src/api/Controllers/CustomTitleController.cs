@@ -5,28 +5,34 @@ using Microsoft.AspNetCore.Mvc;
 namespace api.Controllers;
 
 [ApiController]
-[Route("api/webhook")]
-public class WebhookController : ControllerBase
+[Route("api/custom-title")]
+public class CustomTitleController : ControllerBase
 {
-    private readonly WebhookManagement _management;
+    private readonly CustomTitleManagement _management;
 
-    public WebhookController(WebhookManagement management)
+    public CustomTitleController(CustomTitleManagement management)
     {
         _management = management;
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create([FromBody] WebhookViewModel model)
+    public async Task<IActionResult> Create([FromBody] CustomTitleViewModel model)
     {
         var result = await _management.Create(model);
-        return Ok(result.webhook);
+
+        if (!result.success)
+        {
+            return UnprocessableEntity($"Custom title already created - '{model.Title}'");
+        }
+
+        return Ok(result.customTitle);
     }
 
     [HttpGet]
     public async Task<IActionResult> Get()
     {
         var result = await _management.Get();
-        return Ok(result.webhooks);
+        return Ok(result.customTitles);
     }
 
     [HttpGet, Route("{id}")]
@@ -37,7 +43,7 @@ public class WebhookController : ControllerBase
         if (!result.success)
             return NotFound($"Entity not found for id: {id}");
 
-        return Ok(result.webhook);
+        return Ok(result.entity);
     }
 
     [HttpDelete, Route("{id}")]

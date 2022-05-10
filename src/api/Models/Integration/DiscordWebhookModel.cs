@@ -3,13 +3,9 @@
 namespace QuickType;
 
 using System;
-using System.Collections.Generic;
-
-using System.Globalization;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 
-public partial class DiscordWebhookModel
+public class DiscordWebhookModel
 {
     [JsonProperty("username")]
     public string? Username { get; set; }
@@ -18,7 +14,7 @@ public partial class DiscordWebhookModel
     public Uri? AvatarUrl { get; set; }
 
     [JsonProperty("embeds")]
-    public Embed[] Embeds { get; set; } = { };
+    public IEnumerable<Embed> Embeds { get; set; } = new List<Embed>();
 }
 
 public partial class Embed
@@ -29,21 +25,3 @@ public partial class Embed
     [JsonProperty("description")]
     public string? Description { get; set; }
 }
-
-public partial class DiscordWebhookModel
-{
-    public static DiscordWebhookModel? FromJson(string json) => JsonConvert.DeserializeObject<DiscordWebhookModel>(json, QuickType.ConverterDiscordWebhookModel.Settings);
-}
-
-internal static class ConverterDiscordWebhookModel
-{
-    public static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
-    {
-        MetadataPropertyHandling = MetadataPropertyHandling.Ignore,
-        DateParseHandling = DateParseHandling.None,
-        Converters = {
-                new IsoDateTimeConverter { DateTimeStyles = DateTimeStyles.AssumeUniversal }
-            },
-    };
-}
-

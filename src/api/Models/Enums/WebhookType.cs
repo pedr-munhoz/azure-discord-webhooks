@@ -1,8 +1,7 @@
-namespace api.Models.Enums
+namespace api.Models.Enums;
+
+public enum WebhookType
 {
-    public enum WebhookType
-    {
-        WorkItemUpdated,
-        Invalid,
-    }
+    WorkItemUpdated,
+    Invalid,
 }
